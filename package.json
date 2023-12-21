@@ -1,7 +1,6 @@
 {
     "name": "qyapi-weixin",
     "version": "0.0.1",
-    "private": true,
     "description": "work wechat msg action",
     "main": "dist/index.js",
     "scripts": {
@@ -13,6 +12,9 @@
       "test": "jest",
       "all": "npm run build && npm run format && npm run lint && npm run package && npm test"
     },
+    "libs": [
+      "dist"
+    ],
     "repository": {
       "type": "git",
       "url": "git+https://github.com/thomas-bello/qyapi_weixin.git"

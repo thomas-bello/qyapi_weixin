@@ -44,57 +44,67 @@ const sendMsgToWeChat = async (botKey: string, props: Parmas): Promise<void> => 
         console.error(JSON.stringify(data))
       }
     } catch (error) {
-      if (error instanceof Error) core.setFailed(error.message)
+      if (error instanceof Error) console.error(error.message)
     }
   }
+
+
+const getKey = (key: string) => {
+  return key.replace(/^-+/gi, '');
+}
 
 async function run(): Promise<void> {
   try {
 
-    const content = process.argv[2]
+    const args = process.argv.reduce((obj, str) => {
+      const [key, value] = str.split('=')
+      if (key && value) {
+        obj[getKey(key)] = value
+      }
+      return obj
+    }, {} as any)
 
+    const { key, content, msgtype = 'text', mentionedMobileList: mentioned } = args
+    const mentionedMobileList: string[] = (mentioned || '').split(',')
 
-    // const botKey: string = core.getInput('botKey')
-    // const content: string = core.getInput('content') || ''
+    console.log(`key: ${key}`)
+    console.log(`content: ${content}`)
+    console.log(`msgtype: ${msgtype}`)
+    console.log(`mentionedMobileList: ${mentionedMobileList}`)
 
-    // const msgtype = core.getInput('msgtype') as MsgType
+    const props: Parmas = {
+        msgtype,
+    }
 
-    // const mentionedMobileList: string[] = (core.getInput('mentionedMobileList') || '').split(',')
+    if (msgtype === 'text') {
+        props.text = {
+            content,
+        }
 
-  
-    // console.log(`botKey: ${botKey}`)
-    // console.log(`content: ${content}`)
-    // console.log(`msgtype: ${msgtype}`)
-    // console.log(`mentionedMobileList: ${mentionedMobileList}`)
+      if (mentionedMobileList.length) {
+        props.text.mentioned_mobile_list = mentionedMobileList
+      }
 
-    // const props: Parmas = {
-    //     msgtype,
-    // }
-
-    // if (msgtype === 'text') {
-    //     props.text = {
-    //         content,
-    //     }
-
-    //   if (mentionedMobileList.length) {
-    //     props.text.mentioned_mobile_list = mentionedMobileList
-    //   }
-
-    // } else if (msgtype === 'markdown') {
-    //   props.markdown = {
-    //       content,
-    //   }
-    //   if (mentionedMobileList.length) {
-    //     props.markdown.mentioned_mobile_list = mentionedMobileList
-    //   }
-    // }
+    } else if (msgtype === 'markdown') {
+      props.markdown = {
+          content,
+      }
+      if (mentionedMobileList.length) {
+        props.markdown.mentioned_mobile_list = mentionedMobileList
+      }
+    }
    
-    // await sendMsgToWeChat(botKey, props)
+    await sendMsgToWeChat(key, props)
     
 
   } catch (error) {
-    if (error instanceof Error) core.setFailed(error.message)
+    if (error instanceof Error) console.error(error.message)
   }
 }
 
 run()
+
+
+/**
+ * node ./dist/index.js --key=xxx --content=xxx --msgtype=xxx --mentionedMobileList=xxx
+ */
